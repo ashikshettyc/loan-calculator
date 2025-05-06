@@ -28,6 +28,7 @@ export const ExchangeRateProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
           'https://v6.exchangerate-api.com/v6/6686a2de26d35fa445f1f68b/latest/USD'
         );

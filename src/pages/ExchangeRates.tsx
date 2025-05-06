@@ -8,9 +8,7 @@ import {
   TableRow,
   Paper,
   Typography,
-  CircularProgress,
   Container,
-  Box,
   TablePagination,
 } from '@mui/material';
 import useExchangeRates from '../hooks/useExchangeRates';
@@ -35,8 +33,25 @@ export default function ExchangeRates() {
     page * rowsPerPage + rowsPerPage
   );
 
-  if (loading) return <Typography sx={{ mt: 4 }}>Loading...</Typography>;
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (loading)
+    return (
+      <Typography
+        variant="h4"
+        className="flex justify-center items-center h-screen"
+      >
+        Loading...
+      </Typography>
+    );
+  if (error)
+    return (
+      <Typography
+        color="error"
+        variant="h4"
+        className="flex justify-center items-center h-screen"
+      >
+        {error}
+      </Typography>
+    );
 
   return (
     <Container>

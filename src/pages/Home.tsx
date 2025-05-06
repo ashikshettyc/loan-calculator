@@ -8,6 +8,7 @@ export default function Home() {
       sx={{
         mt: 10,
       }}
+      className="flex flex-col gap-4"
     >
       <Typography
         variant="h3"

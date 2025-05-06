@@ -1,134 +1,112 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button } from '@mui/material';
+import { Controller, useForm } from 'react-hook-form';
+import AmortizationTable from './AmortizationTable';
 
-interface FormInputs {
-  loanAmount: string;
-  interestRate: string;
-  termYears: string;
-}
+type ScheduleItem = {
+  month: number;
+  principal: number;
+  interest: number;
+  balance: number;
+};
 
-const LoanCalculatorForm: React.FC = () => {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormInputs>({ mode: 'onChange' });
+type FormInputs = {
+  loanAmount: number;
+  interestRate: number;
+  termYears: number;
+};
 
-  const [emi, setEmi] = useState<number | null>(null);
+export default function LoanCalculatorForm() {
+  const { control, handleSubmit } = useForm<FormInputs>({
+    defaultValues: {
+      loanAmount: 10000,
+      interestRate: 6,
+      termYears: 2,
+    },
+  });
 
-  const calculateEMI = (P: number, R: number, N: number): number => {
-    const r = R / 12 / 100;
-    const n = N * 12;
-    return (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-  };
+  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
-  const onSubmit = (data: FormInputs) => {
-    const { loanAmount, interestRate, termYears } = data;
-    const emiResult = calculateEMI(+loanAmount, +interestRate, +termYears);
-    setEmi(Number(emiResult.toFixed(2)));
+  const onSubmit = (values: FormInputs) => {
+    const { loanAmount, interestRate, termYears } = values;
+    const P = +loanAmount;
+    const r = interestRate / 12 / 100;
+    const n = termYears * 12;
+    const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
+    let balance = P;
+    const generated: ScheduleItem[] = [];
+
+    for (let i = 1; i <= n; i++) {
+      const interest = balance * r;
+      const principal = emi - interest;
+      balance -= principal;
+      generated.push({
+        month: i,
+        principal,
+        interest,
+        balance: balance > 0 ? balance : 0,
+      });
+    }
+
+    setSchedule(generated);
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'start',
-        maxWidth: 600,
-      }}
-    >
-      <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 2,
-          }}
-        >
+    <Box sx={{ mb: 3 }}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <Controller
             name="loanAmount"
             control={control}
-            defaultValue=""
-            rules={{
-              required: 'Loan amount is required',
-              validate: (value) => {
-                if (isNaN(Number(value)))
-                  return 'Please enter a valid loan amount';
-                if (Number(value) <= 0)
-                  return 'Loan amount must be greater than 0';
-                return true;
-              },
-            }}
             render={({ field }) => (
               <TextField
                 {...field}
                 label="Loan Amount"
-                variant="outlined"
                 fullWidth
-                error={!!errors.loanAmount}
-                helperText={errors.loanAmount?.message}
+                type="number"
               />
             )}
           />
-
           <Controller
             name="interestRate"
             control={control}
-            defaultValue=""
-            rules={{
-              required: 'Interest rate is required',
-              validate: (value) =>
-                (!isNaN(Number(value)) && Number(value) > 0) ||
-                'Interest rate must be a number greater than 0',
-            }}
             render={({ field }) => (
               <TextField
                 {...field}
                 label="Interest Rate (%)"
-                variant="outlined"
                 fullWidth
-                error={!!errors.interestRate}
-                helperText={errors.interestRate?.message}
+                type="number"
               />
             )}
           />
-
           <Controller
             name="termYears"
             control={control}
-            defaultValue=""
-            rules={{
-              required: 'Term is required',
-              validate: (value) =>
-                (!isNaN(Number(value)) && Number(value) > 0) ||
-                'Term must be a number greater than 0',
-            }}
             render={({ field }) => (
               <TextField
                 {...field}
                 label="Term (Years)"
-                variant="outlined"
                 fullWidth
-                error={!!errors.termYears}
-                helperText={errors.termYears?.message}
+                type="number"
               />
             )}
           />
         </Box>
 
-        <Button variant="contained" type="submit" sx={{ mt: 3 }}>
-          Calculate EMI
+        <Button variant="contained" type="submit">
+          Calculate
         </Button>
       </form>
 
-      {emi !== null && (
-        <Typography variant="h6" sx={{ mt: 3 }}>
-          Monthly EMI: ${emi}
-        </Typography>
+      {schedule.length > 0 && (
+        <Box mt={4}>
+          <AmortizationTable
+            schedule={schedule}
+            onReset={() => setSchedule([])}
+          />
+        </Box>
       )}
     </Box>
   );
-};
-
-export default LoanCalculatorForm;
+}
