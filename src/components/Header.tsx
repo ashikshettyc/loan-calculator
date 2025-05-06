@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import { useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,7 +10,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Stack, Switch } from '@mui/material';
+import { FormControlLabel, Stack, Switch } from '@mui/material';
+import { useThemeContext } from '../context/ThemeContext';
 
 interface Props {
   window?: () => Window;
@@ -30,17 +31,16 @@ const navItems = [
 export default function Header(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [checked, setChecked] = React.useState(false);
   const location = useLocation();
-
+  const { mode, toggleTheme } = useThemeContext();
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
 
   const handleThemeToggle = () => {
-    setChecked((prev) => !prev);
+    toggleTheme();
   };
-
+  const checked = mode === 'dark';
   const isActive = (href: string) => location.pathname === href;
 
   const drawer = (
@@ -114,10 +114,15 @@ export default function Header(props: Props) {
               </Button>
             ))}
           </Box>
-          <Switch
-            checked={checked}
-            onChange={handleThemeToggle}
-            inputProps={{ 'aria-label': 'theme switch' }}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={checked}
+                onChange={handleThemeToggle}
+                inputProps={{ 'aria-label': 'theme switch' }}
+              />
+            }
+            label={checked ? 'Dark Mode' : 'Light Mode'}
           />
         </Toolbar>
       </AppBar>

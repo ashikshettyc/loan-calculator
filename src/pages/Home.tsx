@@ -1,5 +1,4 @@
 import { Container, Typography } from '@mui/material';
-import React from 'react';
 import LoanCalculatorForm from '../components/InputForm';
 
 export default function Home() {

@@ -1,4 +1,5 @@
-import React, {
+import axios from 'axios';
+import {
   createContext,
   useContext,
   useEffect,
@@ -29,22 +30,25 @@ export const ExchangeRateProvider = ({ children }: { children: ReactNode }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
+        const response = await axios.get(
           'https://v6.exchangerate-api.com/v6/6686a2de26d35fa445f1f68b/latest/USD'
         );
-        const data = await response.json();
+
+        const data = response.data;
+
         if (data.result === 'success') {
           setData(data);
         } else {
           setError('Failed to fetch data');
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
-        setError('server error');
+        setError('Server error');
+        console.log(error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
   return (
